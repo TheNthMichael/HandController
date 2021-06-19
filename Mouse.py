@@ -1,3 +1,4 @@
+import time
 import pydirectinput as pag
 import cv2
 import math
@@ -44,14 +45,30 @@ class Mouse:
 
         self.pastXCoord = xSmoothed
         self.pastYCoord = ySmoothed
+
+        # Apparently this hogs resources if we don't add some delay.
         if gestures.isDetected:
             pag.moveTo(int(xSmoothed), int(ySmoothed), _pause=False)
+        else:
+            time.sleep(1/1000)
         """if handtrack.gestures.LMouseDown:
             pag.mouseDown(button='right')
             elif pastMouseDown:
                 pag.mouseUp(button='right')
             pastMouseDown = handtrack.gestures.LMouseDown"""
 
+"""
+Separate mouse movement from the framerate of the camera which allows in 
+between frame smoothing to occur. (catch up to last known value in between
+frames. May need to adjust smoothingFactor to 1 / fps)
+"""
+def mouseThread(webcam, handtracker, mouse, ipc, dataLock, exitEvent):
+    try:
+        while not exitEvent.is_set():
+            # Gain access to webcam, handtracker, ipc, and mouse for data use
+            #with dataLock:
+            mouse.update(handtracker.gestures)
 
-def mouseThread(webcam, handtracker, mouse, ipc, dataLock):
-    pass
+    except Exception as err:
+        print(err)
+        exitEvent.set()

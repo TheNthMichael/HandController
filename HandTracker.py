@@ -92,7 +92,7 @@ class HandTracker:
         print("Creating HandTracker:\n\tFrameSize=(", width,",", height, ")")
         self.vidWidth = width
         self.vidHeight = height
-        self.hasGraph = False
+        self.hasGraph = True
         self.mp_drawing = mp.solutions.drawing_utils
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(

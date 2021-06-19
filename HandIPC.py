@@ -36,3 +36,12 @@ class IPC:
     """
     def __del__(self):
         pass
+
+
+"""
+Separate ipc communication from the framerate of the camera which allows
+for continous feed of values over socket connection even if there are
+duplicates. (may not be needed)
+"""
+def ipcThread(webcam, handtracker, mouse, ipc, dataLock):
+    pass

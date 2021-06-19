@@ -12,7 +12,6 @@ class WebCam:
         self.frame = None
         self.user_exit = False
         self.cap_fail_exit = False
-        self.error_exit = False
 
     def update(self):
         success, image = self.cap.read()
@@ -52,7 +51,7 @@ class WebCam:
     """
     @property
     def state_exit(self):
-        return (self.user_exit or self.state_exit or self.cap_fail_exit)
+        return (self.user_exit or self.cap_fail_exit)
 
     """
     Deconstructor that handles cv2 cleanup.
