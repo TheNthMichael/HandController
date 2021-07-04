@@ -31,12 +31,11 @@ class Graph:
     Add a line between multiple points in a sequence.
     """
     def addLine(self, points, scaleFactor):
-        newScaleFactor = scaleFactor / self.pastScaleFactor
         line = Line()
         for p in points:
             line.pxs.append(p.x * 640 / (scaleFactor * 10))
             line.pys.append((1-p.y) * 480 / (scaleFactor * 10))
-            line.pzs.append(p.z * 300 + scaleFactor * 300)
+            line.pzs.append((p.z + 1) * 300 + scaleFactor * 300)
         self.lines.append(line)
         self.pastScaleFactor = scaleFactor
 
@@ -100,6 +99,9 @@ class HandTracker:
             min_detection_confidence=0.3,
             min_tracking_confidence=0.3
         )
+        self.leftHand = None
+        self.rightHand = None
+        self.scaleFactor = 1
         self.gestures = Gestures()
         if self.hasGraph:
             self.graph = Graph("test 3d hand")
@@ -143,7 +145,8 @@ class HandTracker:
         # sum each possible pair 
         for x in points:
             for y in points:
-                sum += math.dist([x.x, x.y, x.z], [y.x, y.y, y.z])
+                if x != y:
+                    sum += math.dist([x.x, x.y, x.z], [y.x, y.y, y.z])
         scaleFactor = sum / (len(points)**2)
         return scaleFactor
     
@@ -219,6 +222,10 @@ class HandTracker:
         
         self.gestures.pointerX, self.gestures.pointerY = self.getPointer(hand)
 
+        # Get depth
+        
+        self.scaleFactor = self.getUnscaledDepth(hand)
+
         # set gesture for clicking
 
         self.gestures.LMouseDown = self.getLMouseDown(hand)
@@ -261,6 +268,7 @@ class HandTracker:
                 #print(self.getLabel(num, hand_landmarks, results))
                 if self.getLabel(num, hand_landmarks, results) != "Left":
                     # set the gestures used during frame
+                    self.rightHand = hand_landmarks
                     self.setGestures(hand_landmarks)
                     if self.hasGraph:
                         self.create3dGraph(hand_landmarks)

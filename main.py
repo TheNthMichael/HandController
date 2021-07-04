@@ -5,14 +5,13 @@ import math
 from threading import Lock, Event, Thread
 from HandTracker import HandTracker
 from WebCam import WebCam
-from HandIPC import IPC
+from HandIPC import IPC, ipcThread
 from Mouse import Mouse, mouseThread
 
 webcam = WebCam()
 handtracker = HandTracker(webcam.width, webcam.height)
 mouse = Mouse(6, webcam.width, webcam.height)
-#ipc = IPC('127.0.0.1', 5000)
-ipc = None
+ipc = IPC('127.0.0.1', 5000, 4000)
 
 dataLock = Lock()
 exitEvent = Event()
@@ -21,8 +20,11 @@ print("Note: When using this application for mouse movement,\nall Mouse Movement
             webcam.width, ", ", webcam.height, ") to (", mouse.winSizeX, ", ", mouse.winSizeY, ").\nFor now inconsistent aspect ratio's may cause uneven movement.")
 
 # Create a new thread if using Mouse or IPC to deal with frame constraints
-mThread = Thread(target=mouseThread, args=(webcam, handtracker, mouse, ipc, dataLock, exitEvent, ))
-mThread.start()
+#mThread = Thread(target=mouseThread, args=(webcam, handtracker, mouse, ipc, dataLock, exitEvent, ))
+#mThread.start()
+
+hThread = Thread(target=ipcThread, args=(webcam, handtracker, mouse, ipc, dataLock, exitEvent, ))
+hThread.start()
 
 while not exitEvent.is_set():
     # Gain access to webcam, handtracker, ipc, and mouse
@@ -42,7 +44,8 @@ while not exitEvent.is_set():
     # Display image
     webcam.display(labelledImage)
 
-mThread.join()
+#mThread.join()
+hThread.join()
 print("Exiting...")
 
 
